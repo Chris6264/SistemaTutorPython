@@ -1,0 +1,19 @@
+[project]
+name = "tutoria"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Christopher Chaparro", email = "l21170291@culiacan.tecnm.mx" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "tk>=0.1.0",
+]
+
+[project.scripts]
+tutoria = "tutoria:main"
+
+[build-system]
+requires = ["uv_build>=0.12.23,<0.13.0"]
+build-backend = "uv_build"
