@@ -1,6 +1,7 @@
-import tkinter as tk
+from tutoria.gui.VentanaPrincipal import VentanaPrincipal
 
-root = tk.Tk()
-root.title("Sistema Tutor De Python")
-root.geometry("1280x720")
-root.mainloop()
+def main():
+    VentanaPrincipal()
+
+if __name__ == "__main__":
+    main()
