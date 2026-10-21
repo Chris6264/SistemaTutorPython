@@ -20,27 +20,49 @@ class MainWindow(QMainWindow):
         information_layout = QHBoxLayout()
         button_layout = QHBoxLayout()
 
-        left_layout.addWidget(CustomTextEdit())
-        left_layout.addWidget(CodeEditor())
+        help_button = CustomButton("Help")
+        compile_button = CustomButton("Compilar")
+        run_button = CustomButton("Run")
 
-        button_layout.addWidget(CustomButton("Compilar"))
-        button_layout.addWidget(CustomButton("Run"))
+        problem_header = CustomTextEdit("Descripcion del problema")
+        code_editor = CodeEditor("Editor De Codigo")
 
-        information_layout.addWidget(CustomButton("Help"))
-        information_layout.addWidget(CustomCounter("Errores"))
-        information_layout.addWidget(CustomCounter("Tiempo"))
+        errors_counter = CustomCounter("Errores")
+        time_counter = CustomCounter("Tiempo")
 
-        right_layout.addWidget(CustomTextEdit())
+        self.chat_bot = ChatBotChat()
+        console_text = CustomTextEdit("Salida del programa")
+
+
+        left_layout.addWidget(problem_header)
+        left_layout.addWidget(code_editor)
+
+        button_layout.addWidget(compile_button)
+        button_layout.addWidget(run_button)
+
+        help_button.clicked.connect(self.alternar_mostrar_chatbot)
+
+        information_layout.addWidget(help_button)
+        information_layout.addWidget(errors_counter)
+        information_layout.addWidget(time_counter)
+
+        right_layout.addWidget(console_text)
         right_layout.addLayout(button_layout)
-        right_layout.addWidget(ChatBotChat())
+        right_layout.addWidget(self.chat_bot)
         right_layout.addLayout(information_layout)
 
         principal_layout.addLayout(left_layout,2)
         principal_layout.addLayout(right_layout,2)
 
+        
+
         container = QWidget()
         container.setLayout(principal_layout)
         self.setCentralWidget(container)
+
+    def alternar_mostrar_chatbot(self):
+        self.chat_bot.setVisible(not self.chat_bot.isVisible())
+
 
 
 
