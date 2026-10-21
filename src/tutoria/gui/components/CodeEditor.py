@@ -1,7 +1,7 @@
-from PySide6.QtWidgets import QTextEdit
+from PySide6.QtWidgets import QPlainTextEdit
 
-class CodeEditor(QTextEdit):
-    def __init__(self):
+class CodeEditor(QPlainTextEdit):
+    def __init__(self,text):
         super().__init__()
 
-        self.setPlaceholderText("Descripción del problema")
+        self.setPlaceholderText(text)

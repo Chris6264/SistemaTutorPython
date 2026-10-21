@@ -1,12 +1,14 @@
 import sys
+from pathlib import Path
 from PySide6.QtWidgets import QApplication
 from tutoria.gui.components.MainWindow import MainWindow
 
-class VentanaPrincipal:
-    def __init__(self):
-        app = QApplication(sys.argv)
+app = QApplication(sys.argv)
 
-        window = MainWindow()
-        window.show()
+ruta = Path(__file__).resolve().parent / "styles/theme.qss"
+app.setStyleSheet(ruta.read_text(encoding="utf-8"))
 
-        app.exec()
+window = MainWindow()
+window.show()
+
+sys.exit(app.exec())
