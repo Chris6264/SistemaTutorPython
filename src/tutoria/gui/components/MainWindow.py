@@ -1,7 +1,7 @@
 
 from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QVBoxLayout, QWidget
 from tutoria.gui.components.CustomTextEdit import CustomTextEdit
-from tutoria.gui.components.CodeEditor import CodeEditor
+from tutoria.gui.components.code_editor.CodeEditor import CodeEditor
 from tutoria.gui.components.CustomButton import CustomButton
 from tutoria.gui.components.CustomCounter import CustomCounter
 from tutoria.gui.components.ChatBotChat import ChatBotChat
@@ -25,7 +25,7 @@ class MainWindow(QMainWindow):
         run_button = CustomButton("Run")
 
         problem_header = CustomTextEdit("Descripcion del problema")
-        code_editor = CodeEditor("Editor De Codigo")
+        code_editor = CodeEditor()
 
         errors_counter = CustomCounter("Errores")
         time_counter = CustomCounter("Tiempo")

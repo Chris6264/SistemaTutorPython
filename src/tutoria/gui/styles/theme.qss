@@ -12,7 +12,6 @@ QTextEdit {
     padding: 12px;
 }
 
-
 QPlainTextEdit {
     background-color: #fdfeff;
     color: black;
