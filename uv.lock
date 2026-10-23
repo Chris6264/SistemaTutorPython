@@ -871,6 +871,7 @@ version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "langchain" },
+    { name = "langchain-core" },
     { name = "langchain-groq" },
     { name = "pyside6" },
     { name = "python-dotenv" },
@@ -880,6 +881,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "langchain", specifier = ">=1.4.6" },
+    { name = "langchain-core", specifier = ">=1.6.10" },
     { name = "langchain-groq", specifier = ">=1.1.3" },
     { name = "pyside6", specifier = ">=6.12.0" },
     { name = "python-dotenv", specifier = ">=1.2.4" },
