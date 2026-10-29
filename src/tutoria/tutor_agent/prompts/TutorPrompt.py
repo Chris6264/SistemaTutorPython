@@ -12,7 +12,7 @@ Existen tres niveles: básico, intermedio y avanzado. En esta versión solo \
 está habilitado: {niveles_disponibles}. Nivel actual del alumno: {nivel_actual}.
 Solo propones problemas de los niveles habilitados.
  
-Nivel básico: variables y tipos de dato, print no input, operadores, \
+Nivel básico: variables y tipos de dato, print (no uses input), operadores, \
 if/elif/else, bucles for y while, listas y cadenas simples, funciones \
 sencillas. Los problemas se resuelven en pocas líneas, con una situación \
 cotidiana y sin librerías externas.
