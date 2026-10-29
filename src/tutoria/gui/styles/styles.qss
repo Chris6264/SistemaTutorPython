@@ -1,0 +1,132 @@
+QWidget {
+    color: #e2e8f0;
+    font-family: "Segoe UI", "Inter", sans-serif;
+    font-size: 14px;
+}
+
+QTextEdit {
+    background-color: #fdfeff;
+    color: black;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 12px;
+}
+
+QPlainTextEdit {
+    background-color: #fdfeff;
+    color: black;
+    font-family: "Consolas", "Cascadia Code", "DejaVu Sans Mono", monospace;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 12px;
+}
+
+QPushButton {
+    background-color: #000000;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 18px;
+    font-weight: 600;
+}
+
+QLineEdit {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-weight: 600;
+    font-size: 20px;
+    selection-background-color: #cfe0fc;
+}
+
+QLCDNumber {
+   color: black; 
+   border: 1px solid #334155;
+   border-radius: 8px;
+}
+
+#BotAvatar {
+    background-color: #000000;
+    color: white;
+    border-radius: 18px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+#BotBubble {
+    background-color: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 14px;
+    border-top-left-radius: 4px;
+}
+
+#BotBubbleText,
+#UserBubbleText {
+    background: transparent;
+    border: none;
+    border-radius: 0px;
+    padding: 0px;
+    color: #0f172a;
+    selection-background-color: #cfe0fc;
+}
+
+#ChatScroll {
+    background-color: #fdfeff;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 6px;
+}
+
+#ChatContent {
+    background-color: #fdfeff;
+}
+
+#ChatInputBox {
+    background-color: #fdfeff;
+    border: 1px solid #334155;
+    border-radius: 20px;
+}
+
+#ChatInputText {
+    background: transparent;
+    border: none;
+    border-radius: 0px;
+    padding: 0px;
+    color: #0f172a;
+    font-family: "Segoe UI", "Inter", sans-serif;
+    selection-background-color: #cfe0fc;
+}
+
+#SendButton {
+    background-color: #000000;
+    color: white;
+    border-radius: 17px;
+    padding: 0px;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+#SendButton:hover {
+    background-color: rgb(37, 36, 36);
+}
+
+#SendButton:disabled {
+    background-color: #cbd5e1;
+    color: #f8fafc;
+}
+
+QPushButton:hover {
+    background-color: rgb(37, 36, 36);
+}
+
+QPushButton:pressed {
+    background-color: rgb(41, 38, 38);
+}
+
+QPushButton:disabled{
+      background-color: #555555;  
+        color: #aaaaaa;           
+        border: 1px solid #333333;
+}
