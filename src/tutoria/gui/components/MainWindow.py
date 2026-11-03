@@ -5,10 +5,12 @@ from tutoria.gui.components.code_editor.CodeEditor import CodeEditor
 from tutoria.gui.components.CustomButton import CustomButton
 from tutoria.gui.components.CustomCounter import CustomCounter
 from tutoria.gui.components.ChatBotChat import ChatBotChat
-from tutoria.gui.components.chatbot_chat.StreamWorker import StreamWorker
 from tutoria.gui.components.DigitalChronometer import DigitalChronometer
+from tutoria.gui.components.ResultDialog import ResultDialog
 from tutoria.tutor_agent.agent.TutorAgent import preguntar
 from tutoria.tutor_agent.prompts.TutorPrompt import MENSAJE_INICIO
+from tutoria.tutor_agent.threads.StreamWorker import StreamWorker
+from tutoria.tutor_agent.threads.ReviewWorker import ReviewWorker
 from contextlib import redirect_stdout
 
 import io
@@ -39,7 +41,7 @@ class MainWindow(QMainWindow):
         self.errors_counter = CustomCounter("Errores")
         self.chat_bot = ChatBotChat()
         self.console_text = CustomTextEdit("Salida del programa")
-        digital_chronometer = DigitalChronometer()
+        self.digital_chronometer = DigitalChronometer()
 
         compile_button.clicked.connect(self.compile_code)
         help_button.clicked.connect(self.toggle_show_chatbot)
@@ -47,7 +49,7 @@ class MainWindow(QMainWindow):
         self.code_editor.textChanged.connect(self.text_changed)
 
         self.problem_header.setMarkdown(preguntar(MENSAJE_INICIO))
-        digital_chronometer.start_chronometer()
+        self.digital_chronometer.start_chronometer()
         self.run_button.setEnabled(False)
         self.chat_bot.setVisible(False)
         self.chat_bot.add_bot_message("¡Hola! Soy tu tutor. Pídeme ayuda cuando la necesites.")
@@ -61,7 +63,7 @@ class MainWindow(QMainWindow):
 
         information_layout.addWidget(help_button)
         information_layout.addWidget(self.errors_counter)
-        information_layout.addWidget(digital_chronometer)
+        information_layout.addWidget(self.digital_chronometer)
 
         right_layout.addWidget(self.console_text, 1)
         right_layout.addLayout(button_layout)
@@ -114,6 +116,9 @@ class MainWindow(QMainWindow):
 
             output = string_io.getvalue()
             self.console_text.setText(output)
+            self.digital_chronometer.pause_chronometer()
+            
+            self.open_review(output)
             return True
         except Exception as e:
            self.console_text.setText(f"Error durante la ejecución del código: {e}")
@@ -139,3 +144,17 @@ class MainWindow(QMainWindow):
 
     def on_stream_error(self, e: str):
         self.bot_message.set_text(f"Error: {e}")
+
+    def open_review(self, output: str):
+        dialog = ResultDialog(
+            self.problem_header.toMarkdown(), output, parent=self
+        )
+
+        self.review_worker = ReviewWorker(
+            self.problem_header.toPlainText(), self.code, output
+        )
+        self.review_worker.resultado.connect(dialog.mostrar_revision)
+        self.review_worker.error.connect(dialog.mostrar_error)
+        self.review_worker.start()
+
+        dialog.exec()
