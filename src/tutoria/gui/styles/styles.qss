@@ -4,6 +4,12 @@ QWidget {
     font-size: 14px;
 }
 
+QLabel{
+    color: black;
+    font-family: "Segoe UI", "Inter", sans-serif;
+    font-size: 40px;
+}
+
 QTextEdit {
     background-color: #fdfeff;
     color: black;
