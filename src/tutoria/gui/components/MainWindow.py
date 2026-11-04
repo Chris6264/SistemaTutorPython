@@ -23,7 +23,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.setWindowTitle("Sistema Tutor De Python - Nivel 1")
+        self.setWindowTitle("TutorIA - Nivel Basico")
         self.resize(1024, 768)
         self.setMinimumSize(800, 600)
         
@@ -312,12 +312,13 @@ class MainWindow(QMainWindow):
         if cambio_nivel:
             configurar_nivel(nivel)
             self.nivel_actual_agente = nivel
-            self.thread_id = uuid4().hex
 
-            self.chat_bot.clear_chat()
-            self.bot_message = None
-            self.respuesta_actual = ""
-            self.help_counter = 0
+        self.thread_id = uuid4().hex
+
+        self.chat_bot.clear_chat()
+        self.bot_message = None
+        self.respuesta_actual = ""
+        self.help_counter = 0
 
         mensaje = (
             "[INICIO_DE_SESION]" if cambio_nivel

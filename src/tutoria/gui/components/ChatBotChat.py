@@ -76,12 +76,10 @@ class ChatBotChat(QWidget):
                 item.widget().deleteLater()
 
     def clear_chat(self):
-        """Elimina los mensajes anteriores del chat."""
+        """Limpia el chat y restaura el mensaje inicial."""
 
-        while self.messages_layout.count():
-            item = self.messages_layout.takeAt(0)
+        self.clear_messages()
 
-            widget = item.widget()
-
-            if widget is not None:
-                widget.deleteLater()
+        self.add_bot_message(
+            "¡Hola! Soy tu tutor. Pídeme ayuda cuando la necesites."
+        )

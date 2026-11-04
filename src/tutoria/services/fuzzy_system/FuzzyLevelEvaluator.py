@@ -23,34 +23,34 @@ class FuzzyLevelEvaluator:
             np.arange(0, 101, 1), "desempeno"
         )
 
-        self.tiempo["rapido"] = fuzz.trimf(
-            self.tiempo.universe, [0, 0, 12]
+        self.tiempo["rapido"] = fuzz.trapmf(
+            self.tiempo.universe, [0, 0, 5, 12]
         )
         self.tiempo["normal"] = fuzz.trimf(
             self.tiempo.universe, [7, 15, 23]
         )
-        self.tiempo["lento"] = fuzz.trimf(
-            self.tiempo.universe, [18, 30, 30]
+        self.tiempo["lento"] = fuzz.trapmf(
+            self.tiempo.universe, [18, 25, 30, 30]
         )
 
-        self.errores["pocos"] = fuzz.trimf(
-            self.errores.universe, [0, 0, 3]
+        self.errores["pocos"] = fuzz.trapmf(
+            self.errores.universe, [0, 0, 1, 3]
         )
         self.errores["moderados"] = fuzz.trimf(
             self.errores.universe, [1, 4, 7]
         )
-        self.errores["muchos"] = fuzz.trimf(
-            self.errores.universe, [5, 10, 10]
+        self.errores["muchos"] = fuzz.trapmf(
+            self.errores.universe, [5, 8, 10, 10]
         )
 
-        self.ayudas["pocas"] = fuzz.trimf(
-            self.ayudas.universe, [0, 0, 3]
+        self.ayudas["pocas"] = fuzz.trapmf(
+            self.ayudas.universe, [0, 0, 1, 3]
         )
         self.ayudas["moderadas"] = fuzz.trimf(
             self.ayudas.universe, [1, 4, 7]
         )
-        self.ayudas["muchas"] = fuzz.trimf(
-            self.ayudas.universe, [5, 10, 10]
+        self.ayudas["muchas"] = fuzz.trapmf(
+            self.ayudas.universe, [5, 8, 10, 10]
         )
 
         self.desempeno["bajo"] = fuzz.trimf(
