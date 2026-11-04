@@ -1,5 +1,5 @@
 
-from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QMainWindow, QHBoxLayout, QVBoxLayout, QWidget, QInputDialog
 from tutoria.gui.components.CustomTextEdit import CustomTextEdit
 from tutoria.gui.components.code_editor.CodeEditor import CodeEditor
 from tutoria.gui.components.CustomButton import CustomButton
@@ -11,7 +11,11 @@ from tutoria.tutor_agent.agent.TutorAgent import preguntar
 from tutoria.tutor_agent.prompts.TutorPrompt import MENSAJE_INICIO
 from tutoria.tutor_agent.threads.StreamWorker import StreamWorker
 from tutoria.tutor_agent.threads.ReviewWorker import ReviewWorker
+from tutoria.services.fuzzy_system.FuzzyLevelEvaluator import FuzzyLevelEvaluator
+from tutoria.services.fuzzy_system.LevelProgressionManager import LevelProgressionManager
+from tutoria.tutor_agent.agent.TutorAgent import configurar_nivel
 from contextlib import redirect_stdout
+from uuid import uuid4
 
 import io
 
@@ -22,10 +26,14 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Sistema Tutor De Python - Nivel 1")
         self.resize(1024, 768)
         self.setMinimumSize(800, 600)
-
+        
         self.worker = None
         self.respuesta_actual = ""
         self.bot_message = None
+        self.review_worker = None
+        self.help_counter = 0
+        self.exercise_completed = False
+        self.nivel_actual = "basico"
 
         principal_layout = QHBoxLayout()
         left_layout = QVBoxLayout()
@@ -33,6 +41,12 @@ class MainWindow(QMainWindow):
         information_layout = QHBoxLayout()
         button_layout = QHBoxLayout()
 
+        self.level_manager = LevelProgressionManager()
+        self.fuzzy_evaluator = FuzzyLevelEvaluator()
+        self.nivel_actual = self.level_manager.nivel_actual
+        self.nivel_actual_agente = "basico"
+        self.thread_id = uuid4().hex
+        self.siguiente_problema_pendiente = False
         self.code_editor = CodeEditor()
         help_button = CustomButton("Help")
         compile_button = CustomButton("Compilar")
@@ -48,7 +62,7 @@ class MainWindow(QMainWindow):
         self.run_button.clicked.connect(self.execute_code)
         self.code_editor.textChanged.connect(self.text_changed)
 
-        self.problem_header.setMarkdown(preguntar(MENSAJE_INICIO))
+        self.problem_header.setMarkdown(preguntar(MENSAJE_INICIO,thread_id=self.thread_id))
         self.digital_chronometer.start_chronometer()
         self.run_button.setEnabled(False)
         self.chat_bot.setVisible(False)
@@ -90,13 +104,18 @@ class MainWindow(QMainWindow):
         except SyntaxError as e:
             return f"Línea {e.lineno}: {e.msg}"
 
+    
     def compile_code(self):
+        if self.exercise_completed:
+            self.console_text.setPlainText("Este ejercicio ya fue completado.")
+            return
+
         self.code = self.code_editor.toPlainText()
 
         if not self.code.strip():
             self.console_text.setPlainText("Escribe algo de código primero.")
             return
-        
+
         error = self.review_syntax(self.code)
 
         if error:
@@ -107,34 +126,75 @@ class MainWindow(QMainWindow):
         else:
             self.console_text.setPlainText("Sin errores de sintaxis.")
             self.run_button.setEnabled(True)
-
+   
     def execute_code(self):
+        if self.exercise_completed:
+            return False
+
+        if self.review_worker is not None and self.review_worker.isRunning():
+            return False
+
+        self.code = self.code_editor.toPlainText()
+
+        if not self.code.strip():
+            self.console_text.setPlainText("Escribe algo de código primero.")
+            return False
+
+        error = self.review_syntax(self.code)
+
+        if error:
+            self.console_text.setPlainText(f"Error de sintaxis\n{error}")
+            self.errors_counter.set_counter(
+                self.errors_counter.get_counter() + 1
+            )
+            return False
+
         string_io = io.StringIO()
+
         try:
             with redirect_stdout(string_io):
-                exec(self.code)
+                exec(
+                    self.code,
+                    {
+                        "__name__": "__main__",
+                        "input": self.solicitar_entrada
+                    }
+                )
 
             output = string_io.getvalue()
-            self.console_text.setText(output)
-            self.digital_chronometer.pause_chronometer()
-            
+            self.console_text.setPlainText(output)
             self.open_review(output)
             return True
-        except Exception as e:
-           self.console_text.setText(f"Error durante la ejecución del código: {e}")
-           return False
 
+        except EOFError:
+            self.console_text.setPlainText(
+                "La entrada de datos fue cancelada."
+            )
+            return False
+
+        except Exception as e:
+            self.console_text.setPlainText(
+                f"Error durante la ejecución del código: {e}"
+            )
+            self.errors_counter.set_counter(
+                self.errors_counter.get_counter() + 1
+            )
+            return False
+        
     def on_user_message(self, text: str):
         if self.worker and self.worker.isRunning():
             return
+
+        self.help_counter += 1
         self.respuesta_actual = ""
         self.bot_message = self.chat_bot.add_bot_message("...")
         self.chat_bot.set_busy(True)
-
-        self.worker = StreamWorker(text)
+        self.worker = StreamWorker(text, self.thread_id)    
         self.worker.token.connect(self.on_token)
         self.worker.error.connect(self.on_stream_error)
-        self.worker.finished.connect(lambda: self.chat_bot.set_busy(False))
+        self.worker.finished.connect(
+            lambda: self.chat_bot.set_busy(False)
+        )
         self.worker.start()
 
     def on_token(self, t: str):
@@ -145,16 +205,164 @@ class MainWindow(QMainWindow):
     def on_stream_error(self, e: str):
         self.bot_message.set_text(f"Error: {e}")
 
+    
+
     def open_review(self, output: str):
         dialog = ResultDialog(
-            self.problem_header.toMarkdown(), output, parent=self
+            self.problem_header.toMarkdown(),
+            output,
+            parent=self
         )
+
+        self.result_dialog = dialog
+        self.run_button.setEnabled(False)
 
         self.review_worker = ReviewWorker(
-            self.problem_header.toPlainText(), self.code, output
+            self.problem_header.toPlainText(),
+            self.code,
+            output
         )
-        self.review_worker.resultado.connect(dialog.mostrar_revision)
-        self.review_worker.error.connect(dialog.mostrar_error)
-        self.review_worker.start()
 
+        dialog.close_button.setEnabled(False)
+
+        self.review_worker.resultado.connect(dialog.mostrar_revision)
+        self.review_worker.resultado.connect(self.on_review_completed)
+        self.review_worker.error.connect(dialog.mostrar_error)
+        self.review_worker.finished.connect(self.on_review_finished)
+        self.review_worker.finished.connect(
+            lambda: dialog.close_button.setEnabled(True)
+        )
+
+        self.review_worker.start()
         dialog.exec()
+
+        if self.siguiente_problema_pendiente:
+            self.siguiente_problema()
+
+
+    def on_review_completed(self, review):
+        if self.exercise_completed:
+            return
+
+        if not review.es_correcto:
+            self.errors_counter.set_counter(
+                self.errors_counter.get_counter() + 1
+            )
+            return
+
+        self.exercise_completed = True
+        self.digital_chronometer.pause_chronometer()
+        self.run_button.setEnabled(False)
+
+        tiempo = self.digital_chronometer.get_elapsed_time()
+        errores = self.errors_counter.get_counter()
+        ayudas = self.help_counter
+
+        minutos, segundos = map(int, tiempo.split(":"))
+        tiempo_minutos = minutos + segundos / 60
+
+        self.result_dialog.mostrar_estadisticas(
+            tiempo, errores, ayudas
+        )
+
+        try:
+            resultado = self.fuzzy_evaluator.evaluar(
+                tiempo_minutos=tiempo_minutos,
+                errores=errores,
+                ayudas=ayudas
+            )
+
+            progresion = self.level_manager.registrar_resultado(
+                resultado["puntuacion"]
+            )
+
+            self.result_dialog.mostrar_evaluacion_difusa(
+                resultado["puntuacion"]
+            )
+
+            if not progresion["evaluacion_completa"]:
+                self.result_dialog.agregar_mensaje(
+                    "¡Primer ejercicio completado! "
+                    "Continúa con el segundo para determinar tu nivel."
+                )
+            else:
+                self.result_dialog.mostrar_resultado_nivel(
+                    progresion["promedio"],
+                    progresion["decision"],
+                    progresion["nivel_actual"]
+                )
+
+            self.nivel_actual = progresion["nivel_actual"]
+
+        except Exception as error:
+            self.result_dialog.mostrar_error_difuso(str(error))
+
+        self.siguiente_problema_pendiente = True
+
+
+    def on_review_finished(self):
+        if not self.exercise_completed:
+            self.run_button.setEnabled(True)
+
+    
+    def siguiente_problema(self):
+        nivel = self.level_manager.nivel_actual
+        cambio_nivel = nivel != self.nivel_actual_agente
+
+        if cambio_nivel:
+            configurar_nivel(nivel)
+            self.nivel_actual_agente = nivel
+            self.thread_id = uuid4().hex
+
+            self.chat_bot.clear_chat()
+            self.bot_message = None
+            self.respuesta_actual = ""
+            self.help_counter = 0
+
+        mensaje = (
+            "[INICIO_DE_SESION]" if cambio_nivel
+            else "[NUEVO_PROBLEMA]"
+        )
+
+        try:
+            problema = preguntar(
+                mensaje,
+                thread_id=self.thread_id
+            )
+        except Exception as error:
+            self.console_text.setPlainText(
+                f"No se pudo generar el siguiente problema: {error}"
+            )
+            return
+
+        self.problem_header.setMarkdown(problema)
+        self.code_editor.clear()
+        self.console_text.clear()
+
+        self.errors_counter.set_counter(0)
+        self.help_counter = 0
+
+        self.digital_chronometer.restart_chronometer()
+        self.digital_chronometer.start_chronometer()
+
+        self.exercise_completed = False
+        self.siguiente_problema_pendiente = False
+
+        self.run_button.setEnabled(False)
+
+        self.setWindowTitle(
+            f"TutorIA - Nivel {nivel.capitalize()}"
+        )
+
+
+    def solicitar_entrada(self, mensaje: str = "") -> str:
+        texto, aceptado = QInputDialog.getText(
+            self,
+            "Entrada de datos",
+            mensaje or "Introduce un valor:"
+        )
+
+        if not aceptado:
+            raise EOFError("El alumno canceló la entrada.")
+
+        return texto

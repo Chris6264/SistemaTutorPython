@@ -31,4 +31,7 @@ class DigitalChronometer(QLCDNumber):
          self.timer.stop()
          self.current_time = QTime(0,0,0)
          self.show_time()
+
+    def get_elapsed_time(self) -> str:
+          return self.current_time.toString("mm:ss")
     
