@@ -52,7 +52,7 @@ class LevelProgressionManager:
             return "subir" if promedio >= 65 else "mantener"
 
         if self.nivel_actual == "intermedio":
-            if promedio < 50:
+            if promedio < 60:
                 return "bajar"
             if promedio >= 75:
                 return "subir"
