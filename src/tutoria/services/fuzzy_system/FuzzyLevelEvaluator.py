@@ -24,13 +24,15 @@ class FuzzyLevelEvaluator:
         )
 
         self.tiempo["rapido"] = fuzz.trapmf(
-            self.tiempo.universe, [0, 0, 5, 12]
+            self.tiempo.universe, [0, 0, 3, 7]
         )
+
         self.tiempo["normal"] = fuzz.trimf(
-            self.tiempo.universe, [7, 15, 23]
+            self.tiempo.universe, [4, 9, 15]
         )
+
         self.tiempo["lento"] = fuzz.trapmf(
-            self.tiempo.universe, [18, 25, 30, 30]
+            self.tiempo.universe, [12, 16, 30, 30]
         )
 
         self.errores["pocos"] = fuzz.trapmf(
